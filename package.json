@@ -1,0 +1,31 @@
+{
+  "name": "retest",
+  "version": "0.0.0",
+  "description": "Request driven library for testing HTTP servers",
+  "main": "retest.js",
+  "scripts": {
+    "test": "istanbul cover _mocha -- -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/blakeembrey/retest.git"
+  },
+  "keywords": [
+    "request",
+    "test"
+  ],
+  "author": "Blake Embrey",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/blakeembrey/retest/issues"
+  },
+  "homepage": "https://github.com/blakeembrey/retest",
+  "devDependencies": {
+    "mocha": "~1.17.1",
+    "istanbul": "~0.2.4",
+    "express": "~3.4.8"
+  },
+  "dependencies": {
+    "request": "~2.33.0"
+  }
+}
