@@ -98,10 +98,12 @@ exports = module.exports = function (app, opts) {
  * Create a retest agent for keeping cookies.
  *
  * @param  {Object}   app
+ * @param  {Object}   opts
  * @return {Function}
  */
-exports.agent = function (app) {
-  return exports(app, {
-    jar: request.jar()
-  });
+exports.agent = function (app, opts) {
+  var options = opts ? copy(opts) : {};
+  options.jar || (options.jar = request.jar());
+
+  return exports(app, options);
 };
