@@ -1,6 +1,6 @@
 {
   "name": "retest",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Request driven library for testing HTTP servers",
   "main": "retest.js",
   "scripts": {
