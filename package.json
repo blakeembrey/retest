@@ -26,6 +26,6 @@
     "express": "~3.4.8"
   },
   "dependencies": {
-    "request": "~2.33.0"
+    "request": "2.x"
   }
 }
