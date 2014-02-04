@@ -79,19 +79,55 @@ var retest = function (app) {
 };
 
 /**
- * Generate an instance of the application for testing with request. Pass a
- * custom request instance as the second parameter.
+ * Generate an instance of the application for testing with request.
  *
  * @param  {Object}   app
- * @param  {Object}   opts
  * @return {Function}
  */
-exports = module.exports = function (app, opts) {
+exports = module.exports = function (app) {
   if (typeof app === 'function') {
     app = http.createServer(app);
   }
 
-  return request.defaults(opts || {}, retest(app));
+  var requester = retest(app);
+  var fn        = request.defaults({}, requester);
+
+  /**
+   * Expose the `defaults` function to retest defaults.
+   *
+   * @param  {Object}   opts
+   * @return {Function}
+   */
+  fn.defaults = function (opts) {
+    return request.defaults(opts, requester);
+  };
+
+  /**
+   * Expose the `forever` functionality of request to the retest instance.
+   *
+   * @param  {Object}   agentOptions
+   * @param  {Object}   optionsArg
+   * @return {Function}
+   */
+  fn.forever = function (agentOptions, optionsArg) {
+    var options = {}
+
+    if (optionsArg) {
+      for (var option in optionsArg) {
+        options[option] = optionsArg[option];
+      }
+    }
+
+    if (agentOptions) {
+      options.agentOptions = agentOptions;
+    }
+
+    options.forever = true;
+
+    return fn.defaults(options);
+  };
+
+  return fn;
 };
 
 /**
@@ -105,5 +141,5 @@ exports.agent = function (app, opts) {
   var options = opts ? copy(opts) : {};
   options.jar || (options.jar = request.jar());
 
-  return exports(app, options);
+  return exports(app).defaults(options);
 };
