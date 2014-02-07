@@ -15,8 +15,8 @@ describe('retest(app)', function () {
       res.send('hello');
     });
 
-    retest(app).get('/', function (err, res, body) {
-      assert.equal(body, 'hello');
+    retest(app).get('/', function (err, res) {
+      assert.equal(res.body, 'hello');
       assert.equal(res.statusCode, 200);
       done(err);
     });
@@ -29,9 +29,9 @@ describe('retest(app)', function () {
       res.send('hello');
     });
 
-    var server = app.listen(4000, function () {
-      retest(server).get('/', function (err, res, body) {
-        assert.equal(body, 'hello');
+    var server = app.listen(4001, function () {
+      retest(server).get('/', function (err, res) {
+        assert.equal(res.body, 'hello');
         assert.equal(res.statusCode, 200);
         done(err);
       });
@@ -45,9 +45,9 @@ describe('retest(app)', function () {
       res.send('hello');
     });
 
-    var server = app.listen(4001, function () {
-      retest('http://localhost:4001').get('/', function (err, res, body) {
-        assert.equal(body, 'hello');
+    var server = app.listen(4002, function () {
+      retest('http://localhost:4002').get('/', function (err, res) {
+        assert.equal(res.body, 'hello');
         assert.equal(res.statusCode, 200);
         done(err);
       });
@@ -67,9 +67,86 @@ describe('retest(app)', function () {
       cert: fs.readFileSync(path.join(fixtures, 'cert.pem'))
     }, app);
 
-    retest(server).get('/', function (err, res, body) {
-      assert.equal(body, 'hello');
+    retest(server).get('/', function (err, res) {
+      assert.equal(res.body, 'hello');
       assert.equal(res.statusCode, 200);
+      done(err);
+    });
+  });
+
+  it('should parse json response body', function (done) {
+    var app = express();
+
+    app.get('/', function (req, res) {
+      res.send({ test: 'hello' });
+    });
+
+    retest(app).get('/', function (err, res) {
+      assert.equal(res.statusCode, 200);
+      assert.deepEqual(res.body, { test: 'hello' });
+      done(err);
+    });
+  });
+
+  it('should parse url encoded response bodies', function (done) {
+    var app = express();
+
+    app.get('/', function (req, res) {
+      res.set('Content-Type', 'application/x-www-form-urlencoded');
+      res.send('test=hello');
+    });
+
+    retest(app).get('/', function (err, res) {
+      assert.equal(res.statusCode, 200);
+      assert.deepEqual(res.body, { test: 'hello' });
+      done(err);
+    });
+  });
+
+  it('should serialize json request bodies', function (done) {
+    var app = express();
+
+    app.use(express.json());
+    app.post('/', function (req, res) {
+      assert.deepEqual(req.body, { test: 'hello' });
+
+      res.send('success');
+    });
+
+    retest(app).post('/', {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: {
+        test: 'hello'
+      }
+    }, function (err, res) {
+      assert.equal(res.statusCode, 200);
+      assert.deepEqual(res.body, 'success');
+      done(err);
+    });
+  });
+
+  it('should serialize url encoded request bodies', function (done) {
+    var app = express();
+
+    app.use(express.urlencoded());
+    app.post('/', function (req, res) {
+      assert.deepEqual(req.body, { test: 'hello' });
+
+      res.send('success');
+    });
+
+    retest(app).post('/', {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: {
+        test: 'hello'
+      }
+    }, function (err, res) {
+      assert.equal(res.statusCode, 200);
+      assert.deepEqual(res.body, 'success');
       done(err);
     });
   });

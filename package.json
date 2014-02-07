@@ -12,7 +12,9 @@
   },
   "keywords": [
     "request",
-    "test"
+    "test",
+    "tdd",
+    "http"
   ],
   "author": "Blake Embrey",
   "license": "MIT",
@@ -26,6 +28,7 @@
     "express": "~3.4.8"
   },
   "dependencies": {
-    "request": "2.x"
+    "request": "2.x",
+    "qs": "~0.6.6"
   }
 }

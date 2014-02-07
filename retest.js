@@ -3,6 +3,47 @@ var http    = require('http');
 var https   = require('https');
 var request = require('request');
 var copy    = require('request/lib/copy');
+var qs      = require('qs');
+
+/**
+ * Return the mime type for a given string.
+ *
+ * @param  {String} str
+ * @return {String}
+ */
+var type = function (str) {
+  return (str || '').split(/ *; */)[0];
+};
+
+/**
+ * Check if the object is a host object, we don't to serialize these.
+ *
+ * @param  {*}       obj
+ * @return {Boolean}
+ */
+var isHost = function (obj) {
+  return typeof obj === 'string' || obj instanceof Buffer;
+};
+
+/**
+ * Serialize request body based on content type.
+ *
+ * @type {Object}
+ */
+var serialize = {
+  'application/json': JSON.stringify,
+  'application/x-www-form-urlencoded': qs.stringify
+};
+
+/**
+ * Parse data based on the response content type.
+ *
+ * @type {Object}
+ */
+var parse = {
+  'application/json': JSON.parse,
+  'application/x-www-form-urlencoded': qs.parse
+};
 
 /**
  * Return an application url.
@@ -68,7 +109,35 @@ var retest = function (app) {
     options = copy(options);
 
     if (done) {
-      options.callback = done;
+      // Override request callback options to include additional parsing logic
+      // and remove the third response body argument.
+      options.callback = function (err, res) {
+        var parser = parse[type(res.headers['content-type'])];
+
+        if (res.req.method !== 'HEAD' && parser) {
+          res.body = parser(res.body);
+        }
+
+        return done(err, res);
+      };
+    }
+
+    if (options.body && !isHost(options.body)) {
+      var contentType;
+
+      // Iterate over headers and find the content type.
+      for (var key in options.headers) {
+        if (key.toLowerCase() === 'content-type') {
+          contentType = type(options.headers[key]);
+          break;
+        }
+      }
+
+      var serializer = serialize[contentType];
+
+      if (serializer) {
+        options.body = serializer(options.body);
+      }
     }
 
     // Correct the request uri.
