@@ -1,6 +1,6 @@
-# retest
+# Retest
 
-Request driven library for testing node.js HTTP servers. Based on [supertest](https://github.com/visionmedia/supertest).
+Request driven library for testing node.js HTTP servers via [request](https://github.com/mikeal/request).
 
 ## Installation
 
