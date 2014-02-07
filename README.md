@@ -27,7 +27,11 @@ retest(app).get('/user', function (err, res) {
 });
 ```
 
-All API methods from [request](https://github.com/mikeal/request) work as usual after calling `retest` with your application.
+A retest instance accepts the same arguments as [request](https://github.com/mikeal/request), including the [options object](https://github.com/mikeal/request#requestoptions-callback).
+
+### Callbacks
+
+The callback function is called with two arguments, the `error` and `response`. The response body will be automatically parsed when possible based on the content type (current `application/json` and `application/x-www-form-urlencoded`).
 
 ### Agent
 

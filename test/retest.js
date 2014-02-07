@@ -150,6 +150,29 @@ describe('retest(app)', function () {
       done(err);
     });
   });
+
+  it('should pipe to the request', function (done) {
+    var app = express();
+
+    app.use(express.json());
+    app.post('/', function (req, res) {
+      assert.deepEqual(req.body, { test: 'hello' });
+
+      res.send('success');
+    });
+
+    var req = retest(app).post('/', {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }, function (err, res) {
+      assert.equal(res.statusCode, 200);
+      assert.deepEqual(res.body, 'success');
+      done(err);
+    });
+
+    fs.createReadStream(__dirname + '/fixtures/test.txt').pipe(req);
+  });
 });
 
 describe('retest.agent(app)', function(){
