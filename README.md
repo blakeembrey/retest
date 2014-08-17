@@ -34,6 +34,28 @@ retest(app).get('/user', function (err, res) {
 
 A retest instance accepts the same arguments as [request](https://github.com/mikeal/request), including the [options object](https://github.com/mikeal/request#requestoptions-callback).
 
+### Multipart Requests
+
+A multipart request can be sent using the [form-data](https://github.com/felixge/node-form-data) module. Just use `retest.form()` to create an instance and pass it as the body option, as you would any other object.
+
+```javascript
+var retest = require('retest');
+var test   = retest(app);
+
+var form = test.form();
+
+// Append fields and files as you normally would.
+form.append('username', 'blakeembrey');
+form.append('password', 'hunter2');
+
+test.post({
+  uri: '/user',
+  body: form
+}, function (err, res) {
+  // ...
+});
+```
+
 ### Callbacks
 
 The callback function is called with two arguments, the `error` and `response`. The response body will be automatically parsed when possible based on the content type (current `application/json` and `application/x-www-form-urlencoded`).

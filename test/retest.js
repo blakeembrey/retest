@@ -1,11 +1,12 @@
 /* global describe, it */
 
-var assert  = require('assert');
-var retest  = require('../');
-var fs      = require('fs');
-var path    = require('path');
-var https   = require('https');
-var express = require('express');
+var assert     = require('assert');
+var retest     = require('../');
+var fs         = require('fs');
+var path       = require('path');
+var https      = require('https');
+var express    = require('express');
+var formidable = require('formidable');
 
 describe('retest(app)', function () {
   it('should fire up the app on an ephemeral port', function (done) {
@@ -15,7 +16,7 @@ describe('retest(app)', function () {
       res.send('hello');
     });
 
-    retest(app).get('/', function (err, res) {
+    retest(app)('/', function (err, res) {
       assert.equal(res.body, 'hello');
       assert.equal(res.statusCode, 200);
       done(err);
@@ -106,7 +107,7 @@ describe('retest(app)', function () {
   it('should serialize json request bodies', function (done) {
     var app = express();
 
-    app.use(express.json());
+    app.use(require('body-parser').json());
     app.post('/', function (req, res) {
       assert.deepEqual(req.body, { test: 'hello' });
 
@@ -130,7 +131,7 @@ describe('retest(app)', function () {
   it('should serialize url encoded request bodies', function (done) {
     var app = express();
 
-    app.use(express.urlencoded());
+    app.use(require('body-parser').urlencoded({ extended: false }));
     app.post('/', function (req, res) {
       assert.deepEqual(req.body, { test: 'hello' });
 
@@ -154,7 +155,7 @@ describe('retest(app)', function () {
   it('should pipe to the request', function (done) {
     var app = express();
 
-    app.use(express.json());
+    app.use(require('body-parser').json());
     app.post('/', function (req, res) {
       assert.deepEqual(req.body, { test: 'hello' });
 
@@ -175,10 +176,10 @@ describe('retest(app)', function () {
   });
 });
 
-describe('retest.agent(app)', function(){
+describe('retest.agent(app)', function () {
   var app = express();
 
-  app.use(express.cookieParser());
+  app.use(require('cookie-parser')());
 
   app.get('/', function (req, res) {
     res.cookie('cookie', 'hey');
@@ -201,6 +202,32 @@ describe('retest.agent(app)', function(){
   it('should send cookies', function (done) {
     agent.get('/return', function (err, res) {
       assert.equal(res.body, 'hey');
+      return done(err);
+    });
+  });
+});
+
+describe('retest.form()', function () {
+  var app = express();
+
+  app.post('/', function (req, res) {
+    var form = new formidable.IncomingForm();
+
+    form.parse(req, function (err, fields) {
+      res.send(fields.username);
+    });
+  });
+
+  it('should post multipart body', function (done) {
+    var form = retest.form();
+
+    form.append('username', 'blakeembrey');
+
+    retest(app).post('/', {
+      body: form
+    }, function (err, res) {
+      assert.equal(res.body, 'blakeembrey');
+
       return done(err);
     });
   });

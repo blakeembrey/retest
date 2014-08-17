@@ -1,9 +1,13 @@
-var url     = require('url');
-var http    = require('http');
-var https   = require('https');
-var request = require('request');
-var copy    = require('request/lib/copy');
-var qs      = require('qs');
+var url      = require('url');
+var http     = require('http');
+var https    = require('https');
+var request  = require('request');
+var FormData = require('form-data');
+var qs       = require('querystring');
+var copy     = require('request/lib/copy');
+
+var JSON_MIME_REGEXP  = /^application\/(?:[\w!#\$%&\*`\-\.\^~]*\+)?json$/i;
+var QUERY_MIME_REGEXP = /^application\/x-www-form-urlencoded$/i;
 
 /**
  * Return the mime type for a given string.
@@ -12,7 +16,7 @@ var qs      = require('qs');
  * @return {String}
  */
 var type = function (str) {
-  return (str || '').split(/ *; */)[0];
+  return (str || '').split(';')[0].trim();
 };
 
 /**
@@ -22,27 +26,9 @@ var type = function (str) {
  * @return {Boolean}
  */
 var isHost = function (obj) {
-  return typeof obj === 'string' || obj instanceof Buffer;
-};
-
-/**
- * Serialize request body based on content type.
- *
- * @type {Object}
- */
-var serialize = {
-  'application/json': JSON.stringify,
-  'application/x-www-form-urlencoded': qs.stringify
-};
-
-/**
- * Parse data based on the response content type.
- *
- * @type {Object}
- */
-var parse = {
-  'application/json': JSON.parse,
-  'application/x-www-form-urlencoded': qs.parse
+  return Object(obj) !== obj ||
+    obj instanceof Buffer ||
+    obj instanceof FormData;
 };
 
 /**
@@ -112,10 +98,22 @@ var retest = function (app) {
       // Override request callback options to include additional parsing logic
       // and remove the third response body argument.
       options.callback = function (err, res) {
-        var parser = parse[type(res.headers['content-type'])];
+        if (res.req.method === 'HEAD') {
+          return done(err, res);
+        }
 
-        if (res.req.method !== 'HEAD' && parser) {
-          res.body = parser(res.body);
+        var contentType = type(res.headers['content-type']);
+
+        // Attempt to parse the response body as JSON.
+        if (JSON_MIME_REGEXP.test(contentType) && res.body) {
+          try {
+            res.body = JSON.parse(res.body);
+          } catch (e) {}
+        }
+
+        // Parse the response body as a url encoded string.
+        if (QUERY_MIME_REGEXP.test(contentType) && res.body) {
+          res.body = qs.parse(res.body);
         }
 
         return done(err, res);
@@ -133,11 +131,22 @@ var retest = function (app) {
         }
       }
 
-      var serializer = serialize[contentType];
-
-      if (serializer) {
-        options.body = serializer(options.body);
+      // Stringify the body as JSON.
+      if (JSON_MIME_REGEXP.test(contentType)) {
+        options.body = JSON.stringify(options.body);
       }
+
+      // Stringify the body as a url encoded form.
+      if (QUERY_MIME_REGEXP.test(contentType)) {
+        options.body = qs.stringify(options.body);
+      }
+    }
+
+    // Support multipart requests with `request`.
+    if (options.body instanceof FormData) {
+      options._form = options.body;
+
+      delete options.body;
     }
 
     // Correct the request uri.
@@ -196,6 +205,9 @@ exports = module.exports = function (app) {
     return fn.defaults(options);
   };
 
+  // Alias the form functionality.
+  fn.form = exports.form;
+
   return fn;
 };
 
@@ -211,4 +223,13 @@ exports.agent = function (app, opts) {
   options.jar || (options.jar = request.jar());
 
   return exports(app).defaults(options);
+};
+
+/**
+ * Create a multipart form data instance for use with requests.
+ *
+ * @return {FormData}
+ */
+exports.form = function () {
+  return new FormData();
 };
