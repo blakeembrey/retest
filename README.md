@@ -1,5 +1,10 @@
 # Retest
 
+[![NPM version][npm-image]][npm-url]
+[![Build status][travis-image]][travis-url]
+[![Test coverage][coveralls-image]][coveralls-url]
+[![Gittip][gittip-image]][gittip-url]
+
 Request driven library for testing node.js HTTP servers via [request](https://github.com/mikeal/request).
 
 ## Installation
@@ -40,3 +45,12 @@ Create an instance that will reuse cookies between requests by calling `retest.a
 ## License
 
 MIT
+
+[npm-image]: https://img.shields.io/npm/v/retest.svg?style=flat
+[npm-url]: https://npmjs.org/package/retest
+[travis-image]: https://img.shields.io/travis/blakeembrey/retest.svg?style=flat
+[travis-url]: https://travis-ci.org/blakeembrey/retest
+[coveralls-image]: https://img.shields.io/coveralls/blakeembrey/retest.svg?style=flat
+[coveralls-url]: https://coveralls.io/r/blakeembrey/retest?branch=master
+[gittip-image]: https://img.shields.io/gittip/blakeembrey.svg?style=flat
+[gittip-url]: https://www.gittip.com/blakeembrey
