@@ -4,7 +4,7 @@ var https    = require('https');
 var request  = require('request');
 var FormData = require('form-data');
 var qs       = require('querystring');
-var copy     = require('request/lib/copy');
+var helpers  = require('request/lib/helpers');
 
 var JSON_MIME_REGEXP  = /^application\/(?:[\w!#\$%&\*`\-\.\^~]*\+)?json$/i;
 var QUERY_MIME_REGEXP = /^application\/x-www-form-urlencoded$/i;
@@ -92,7 +92,7 @@ var retest = function (app) {
       options = uri;
     }
 
-    options = copy(options);
+    options = helpers.copy(options);
 
     if (done) {
       // Override request callback options to include additional parsing logic
@@ -219,7 +219,7 @@ exports = module.exports = function (app) {
  * @return {Function}
  */
 exports.agent = function (app, opts) {
-  var options = opts ? copy(opts) : {};
+  var options = opts ? helpers.copy(opts) : {};
   options.jar || (options.jar = request.jar());
 
   return exports(app).defaults(options);
