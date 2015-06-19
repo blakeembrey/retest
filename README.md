@@ -7,6 +7,8 @@
 
 Request driven library for testing node.js HTTP servers via [request](https://github.com/mikeal/request).
 
+**Note:** This library is not heavily maintained. If you're looking for a functional request library with hte ability to mount servers during tests, consider trying [Popsicle](https://github.com/blakeembrey/popsicle) with the [server plugin](https://github.com/blakeembrey/popsicle-server).
+
 ## Installation
 
 ```
