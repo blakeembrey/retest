@@ -31,11 +31,11 @@
     "cookie-parser": "^1.3.2",
     "express": "^4.8.4",
     "formidable": "^1.0.15",
-    "istanbul": "^0.3.0",
-    "mocha": "^1.21.4"
+    "istanbul": "^0.4.5",
+    "mocha": "^3.3.0"
   },
   "dependencies": {
-    "form-data": "^0.1.4",
+    "form-data": "^2.1.4",
     "request": "2.x"
   }
 }
