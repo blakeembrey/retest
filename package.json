@@ -36,6 +36,6 @@
   },
   "dependencies": {
     "form-data": "^2.1.4",
-    "request": "2.x"
+    "request": "^2.82.0"
   }
 }
